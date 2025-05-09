@@ -1,0 +1,6 @@
+[
+  { "id": "1", "name": "Áo thun nam", "price": 120000, "booth": "Admin" },
+  { "id": "2", "name": "Quần jeans nữ", "price": 250000, "booth": "Admin" },
+  { "id": "3", "name": "Giày thể thao", "price": 500000, "booth": "Admin" },
+  { "id": "4", "name": "Balo laptop", "price": 350000, "booth": "Admin" }
+]

@@ -1,0 +1,25 @@
+# Thư viện chính
+tk==0.1.0  # Gói cài đặt Tkinter cho các hệ thống không có sẵn
+
+# Thư viện phát triển
+pylint==3.0.3  # Kiểm tra code style và tìm lỗi
+black==24.1.1  # Format code tự động
+pytest==8.0.0  # Framework testing
+pytest-cov==4.1.0  # Kiểm tra độ phủ code
+
+# Thư viện tiện ích
+python-dotenv==1.0.1  # Quản lý biến môi trường
+tqdm==4.66.1  # Hiển thị thanh tiến trình
+colorama==0.4.6  # Hỗ trợ màu sắc trong terminal
+
+# Thư viện bảo mật
+bcrypt==4.1.2  # Mã hóa mật khẩu
+cryptography==42.0.2  # Thư viện mã hóa
+
+# Thư viện xử lý dữ liệu
+pandas==2.2.0  # Xử lý và phân tích dữ liệu
+numpy==1.26.3  # Tính toán số học
+
+# Thư viện báo cáo
+reportlab==4.1.0  # Tạo báo cáo PDF
+openpyxl==3.1.2  # Xử lý file Excel 

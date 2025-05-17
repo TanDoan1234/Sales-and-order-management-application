@@ -2,23 +2,32 @@ import os
 import json
 import re
 import uuid
+from typing import Dict, List, Optional, Tuple, Union, Any
 
-def data_path(filename):
+def data_path(filename: str) -> str:
     return os.path.join(os.path.dirname(__file__), filename)
 
 class DataManager:
+    """
+    Lớp quản lý dữ liệu cho ứng dụng bán hàng và quản lý đơn hàng.
+    Xử lý việc quản lý người dùng, sản phẩm, đơn hàng và lưu trữ dữ liệu.
+    """
     def __init__(self):
-        self.users = self.load_users()
-        self.main_products = self.load_main_products()
-        self.user_products = self.load_user_products()
-        self.orders = self.load_orders()
-        self.user_orders = self.load_user_orders()
-        self.carts = self.load_carts()
-        self.messages = self.load_messages()
-        self.reviews = self.load_reviews()
-        self.current_user = self.load_current_user()
+        """
+        Khởi tạo DataManager bằng cách tải tất cả dữ liệu từ các file JSON.
+        Thiết lập người dùng, sản phẩm, đơn hàng, giỏ hàng, tin nhắn, đánh giá và người dùng hiện tại.
+        """
+        self.users: Dict[str, Dict[str, str]] = self.load_users()
+        self.main_products: List[Dict[str, Any]] = self.load_main_products()
+        self.user_products: Dict[str, List[Dict[str, Any]]] = self.load_user_products()
+        self.orders: Dict[str, List[Dict[str, Any]]] = self.load_orders()
+        self.user_orders: Dict[str, List[Dict[str, Any]]] = self.load_user_orders()
+        self.carts: Dict[str, List[Dict[str, Any]]] = self.load_carts()
+        self.messages: Dict[str, List[str]] = self.load_messages()
+        self.reviews: Dict[str, List[Dict[str, Any]]] = self.load_reviews()
+        self.current_user: Optional[str] = self.load_current_user()
 
-    def load_users(self):
+    def load_users(self) -> Dict[str, Dict[str, str]]:
         try:
             with open(data_path("users.json"), "r", encoding="utf-8") as file:
                 return json.load(file)
@@ -129,7 +138,17 @@ class DataManager:
             self.messages[target_user].append(message)
             self.save_messages()
 
-    def login(self, username, password):
+    def login(self, username: str, password: str) -> bool:
+        """
+        Xác thực người dùng và đặt họ làm người dùng hiện tại.
+
+        Args:
+            username (str): Tên đăng nhập
+            password (str): Mật khẩu
+
+        Returns:
+            bool: True nếu đăng nhập thành công, False nếu thất bại
+        """
         if username in self.users and self.users[username]['password'] == password:
             self.current_user = username
             self.carts.setdefault(self.current_user, [])
@@ -143,7 +162,19 @@ class DataManager:
             return True
         return False
 
-    def register(self, username, password, phone, email):
+    def register(self, username: str, password: str, phone: str, email: str) -> Tuple[bool, str]:
+        """
+        Đăng ký tài khoản người dùng mới với các điều kiện kiểm tra.
+
+        Args:
+            username (str): Tên đăng nhập
+            password (str): Mật khẩu
+            phone (str): Số điện thoại (phải bắt đầu bằng 0 và có 10 chữ số)
+            email (str): Email (phải kết thúc bằng @gmail.com)
+
+        Returns:
+            tuple: (bool, str) - (trạng thái thành công, thông báo)
+        """
         if not username or not password or not phone or not email:
             return False, "Vui lòng nhập đầy đủ thông tin!"
         if username in self.users:
@@ -172,7 +203,13 @@ class DataManager:
         self.current_user = None
         self.save_current_user()
 
-    def add_to_cart(self, product):
+    def add_to_cart(self, product: Dict[str, Any]) -> None:
+        """
+        Thêm sản phẩm vào giỏ hàng của người dùng hiện tại.
+
+        Args:
+            product (dict): Sản phẩm cần thêm vào giỏ hàng
+        """
         if self.current_user not in self.carts:
             self.carts[self.current_user] = []
         self.carts[self.current_user].append(product)
@@ -189,7 +226,15 @@ class DataManager:
             return True
         return False
 
-    def buy_single_product(self, product, quantity, address):
+    def buy_single_product(self, product: Dict[str, Any], quantity: int, address: str) -> None:
+        """
+        Xử lý việc mua một sản phẩm.
+
+        Args:
+            product (dict): Sản phẩm cần mua
+            quantity (int): Số lượng mua
+            address (str): Địa chỉ giao hàng
+        """
         if self.current_user not in self.orders:
             self.orders[self.current_user] = []
         order = {"product": product, "quantity": quantity, "address": address}
@@ -211,7 +256,17 @@ class DataManager:
 
         self.add_message(f"Mua {product['name']} ({quantity} cái) từ gian hàng {product['booth']} thành công!")
 
-    def add_user_product(self, name, price):
+    def add_user_product(self, name: str, price: float) -> bool:
+        """
+        Thêm sản phẩm mới vào gian hàng của người dùng hiện tại.
+
+        Args:
+            name (str): Tên sản phẩm
+            price (float): Giá sản phẩm
+
+        Returns:
+            bool: True nếu thêm sản phẩm thành công
+        """
         if self.current_user not in self.user_products:
             self.user_products[self.current_user] = []
 
@@ -241,7 +296,17 @@ class DataManager:
             return True
         return False
 
-    def submit_review(self, product, rating):
+    def submit_review(self, product: Dict[str, Any], rating: int) -> bool:
+        """
+        Gửi đánh giá cho sản phẩm.
+
+        Args:
+            product (dict): Sản phẩm cần đánh giá
+            rating (int): Số sao đánh giá (thường từ 1-5)
+
+        Returns:
+            bool: True nếu gửi đánh giá thành công
+        """
         if self.current_user not in self.reviews:
             self.reviews[self.current_user] = []
 
@@ -257,7 +322,17 @@ class DataManager:
         self.add_message(f"Đã đánh giá {product['name']}: {rating} sao")
         return True
 
-    def change_password(self, old_password, new_password):
+    def change_password(self, old_password: str, new_password: str) -> Tuple[bool, str]:
+        """
+        Thay đổi mật khẩu của người dùng hiện tại.
+
+        Args:
+            old_password (str): Mật khẩu cũ
+            new_password (str): Mật khẩu mới
+
+        Returns:
+            tuple: (bool, str) - (trạng thái thành công, thông báo)
+        """
         if self.users[self.current_user]['password'] != old_password:
             return False, "Mật khẩu cũ không đúng!"
         if not new_password:
@@ -268,7 +343,13 @@ class DataManager:
         self.add_message("Thay đổi mật khẩu thành công!")
         return True, "Thay đổi mật khẩu thành công!"
 
-    def delete_account(self):
+    def delete_account(self) -> bool:
+        """
+        Xóa tài khoản người dùng hiện tại và tất cả dữ liệu liên quan.
+
+        Returns:
+            bool: True nếu xóa tài khoản thành công
+        """
         if self.current_user in self.users:
             del self.users[self.current_user]
         if self.current_user in self.carts:

@@ -7,6 +7,11 @@ from typing import Dict, List, Optional, Tuple, Union, Any
 def data_path(filename: str) -> str:
     return os.path.join(os.path.dirname(__file__), filename)
 
+def ensure_data_dir():
+    data_dir = os.path.dirname(data_path("users.json"))
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
 class DataManager:
     """
     Lớp quản lý dữ liệu cho ứng dụng bán hàng và quản lý đơn hàng.
@@ -35,6 +40,7 @@ class DataManager:
             return {}
 
     def save_users(self):
+        ensure_data_dir()
         with open(data_path("users.json"), "w", encoding="utf-8") as file:
             json.dump(self.users, file, indent=4, ensure_ascii=False)
 
@@ -46,6 +52,7 @@ class DataManager:
             return []
 
     def save_main_products(self):
+        ensure_data_dir()
         with open(data_path("main_products.json"), "w", encoding="utf-8") as file:
             json.dump(self.main_products, file, indent=4, ensure_ascii=False)
 
@@ -57,6 +64,7 @@ class DataManager:
             return {}
 
     def save_user_products(self):
+        ensure_data_dir()
         with open(data_path("user_products.json"), "w", encoding="utf-8") as file:
             json.dump(self.user_products, file, indent=4, ensure_ascii=False)
 
@@ -68,6 +76,7 @@ class DataManager:
             return {}
 
     def save_orders(self):
+        ensure_data_dir()
         with open(data_path("orders.json"), "w", encoding="utf-8") as file:
             json.dump(self.orders, file, indent=4, ensure_ascii=False)
 
@@ -79,6 +88,7 @@ class DataManager:
             return {}
 
     def save_user_orders(self):
+        ensure_data_dir()
         with open(data_path("user_orders.json"), "w", encoding="utf-8") as file:
             json.dump(self.user_orders, file, indent=4, ensure_ascii=False)
 
@@ -90,6 +100,7 @@ class DataManager:
             return {}
 
     def save_carts(self):
+        ensure_data_dir()
         with open(data_path("carts.json"), "w", encoding="utf-8") as file:
             json.dump(self.carts, file, indent=4, ensure_ascii=False)
 
@@ -101,6 +112,7 @@ class DataManager:
             return {}
 
     def save_messages(self):
+        ensure_data_dir()
         with open(data_path("messages.json"), "w", encoding="utf-8") as file:
             json.dump(self.messages, file, indent=4, ensure_ascii=False)
 
@@ -112,6 +124,7 @@ class DataManager:
             return {}
 
     def save_reviews(self):
+        ensure_data_dir()
         with open(data_path("reviews.json"), "w", encoding="utf-8") as file:
             json.dump(self.reviews, file, indent=4, ensure_ascii=False)
 
@@ -127,6 +140,7 @@ class DataManager:
             return None
 
     def save_current_user(self):
+        ensure_data_dir()
         with open(data_path("current_user.json"), "w", encoding="utf-8") as file:
             json.dump({"username": self.current_user}, file, indent=4, ensure_ascii=False)
 

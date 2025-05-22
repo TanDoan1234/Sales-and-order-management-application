@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from data.data_handler import DataManager
+from Data.data_handler import DataManager
 
 # Bảng màu mới theo mẫu Vibrant Visuals
 PRIMARY_COLOR = "#FFA726"  # Cam sáng
@@ -749,9 +749,9 @@ class ECommerceGUI:
         success, message = self.data_manager.register(username, password, phone, email)
         if success:
             messagebox.showinfo("Thành công", message)
+            self.show_profile()
         else:
             messagebox.showerror("Lỗi", message)
-        self.show_profile()
 
     def logout(self):
         self.data_manager.logout()

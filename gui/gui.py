@@ -2,24 +2,24 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from Data.data_handler import DataManager
 
-# Bảng màu mới theo mẫu Vibrant Visuals
-PRIMARY_COLOR = "#FFA726"  # Cam sáng
-SECONDARY_COLOR = "#FF9800"  # Cam đậm
-BG_COLOR = "#FFF3E0"  # Vàng nhạt
-CARD_COLOR = "#FFFFFF"  # Card trắng
-BORDER_COLOR = "#ECECEC"  # Xám nhạt
-TEXT_COLOR = "#222222"
-PASTEL_BLUE = "#81D4FA"
-PASTEL_PINK = "#F8BBD0"
-PASTEL_PURPLE = "#CE93D8"
-PASTEL_GREEN = "#A5D6A7"
-RED = "#E57373"
+# Bảng màu mới theo Material Design
+PRIMARY_COLOR = "#2196F3"  # Xanh dương
+SECONDARY_COLOR = "#1976D2"  # Xanh dương đậm
+BG_COLOR = "#F5F5F5"  # Xám nhạt
+CARD_COLOR = "#FFFFFF"  # Trắng
+BORDER_COLOR = "#E0E0E0"  # Xám nhạt
+TEXT_COLOR = "#212121"  # Đen
+ACCENT_COLOR = "#FF4081"  # Hồng
+SUCCESS_COLOR = "#4CAF50"  # Xanh lá
+WARNING_COLOR = "#FFC107"  # Vàng
+ERROR_COLOR = "#F44336"  # Đỏ
 
 class ECommerceGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Ứng Dụng Quản Lý Bán Hàng")
-        self.root.geometry("900x650")
+        self.root.geometry("1100x750")  # Kích thước mặc định cũ
+        self.root.minsize(900, 650)      # Kích thước tối thiểu cũ
         self.root.configure(bg=BG_COLOR)
 
         self.data_manager = DataManager()
@@ -29,16 +29,17 @@ class ECommerceGUI:
         self.create_gui()
 
     def create_gui(self):
-        self.main_frame = tk.Frame(self.root, bg=BG_COLOR)
-        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        self.content_frame = tk.Frame(self.root, bg=BG_COLOR)
+        self.content_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.main_frame = tk.Frame(self.content_frame, bg=BG_COLOR)
+        self.main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.nav_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=60)
+        self.nav_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
-        nav_frame = tk.Frame(self.root, bg=PRIMARY_COLOR, height=60)
-        nav_frame.pack(side=tk.BOTTOM, fill=tk.X)
-
-        self.home_btn = tk.Button(nav_frame, text="🏠 Trang Chủ", command=self.show_home, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 13, "bold"), bd=0, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR)
+        self.home_btn = tk.Button(self.nav_frame, text="🏠 Trang Chủ", command=self.show_home, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 13, "bold"), bd=0, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR)
         self.home_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=10, pady=8)
 
-        self.profile_btn = tk.Button(nav_frame, text="👤 Tôi", command=self.show_profile, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 13, "bold"), bd=0, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR)
+        self.profile_btn = tk.Button(self.nav_frame, text="👤 Tôi", command=self.show_profile, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 13, "bold"), bd=0, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR)
         self.profile_btn.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=10, pady=8)
 
         self.show_home()
@@ -105,12 +106,15 @@ class ECommerceGUI:
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
+        num_columns = 4  # Số sản phẩm mỗi hàng
         if not self.filtered_products:
-            tk.Label(self.scrollable_frame, text="Không tìm thấy sản phẩm!", bg=BG_COLOR, font=("Segoe UI", 15, "bold"), fg=RED).grid(row=0, column=0, padx=10, pady=10)
+            tk.Label(self.scrollable_frame, text="Không tìm thấy sản phẩm!", bg=BG_COLOR, font=("Segoe UI", 15, "bold"), fg=ERROR_COLOR).grid(row=0, column=0, padx=10, pady=10)
         else:
             for i, product in enumerate(self.filtered_products):
+                row = i // num_columns
+                col = i % num_columns
                 frame = tk.Frame(self.scrollable_frame, bg=CARD_COLOR, relief=tk.RAISED, borderwidth=1, highlightbackground=BORDER_COLOR, highlightthickness=1)
-                frame.grid(row=i//3, column=i%3, padx=18, pady=18, sticky="nsew")
+                frame.grid(row=row, column=col, padx=18, pady=18, sticky="nsew")
                 frame.grid_propagate(False)
                 frame.config(width=240, height=180)
 
@@ -124,6 +128,10 @@ class ECommerceGUI:
                 add_btn = tk.Button(frame, text="Thêm vào giỏ", command=lambda p=product: self.add_to_cart(p), bg=SECONDARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=PRIMARY_COLOR, activeforeground=TEXT_COLOR, cursor="hand2")
                 add_btn.pack(pady=(0, 10))
 
+            # Đặt weight cho các cột để giãn đều
+            for col in range(num_columns):
+                self.scrollable_frame.grid_columnconfigure(col, weight=1)
+
     def filter_products(self, event=None):
         keyword = self.search_entry.get().strip().lower()
         self.load_combined_products()
@@ -136,28 +144,53 @@ class ECommerceGUI:
         self.update_nav_buttons()
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-
         cart_frame = tk.Frame(self.main_frame, bg=BG_COLOR)
         cart_frame.pack(fill=tk.BOTH, expand=True)
-
         tk.Label(cart_frame, text="🛒 Giỏ Hàng", bg=PRIMARY_COLOR, font=("Segoe UI", 14, "bold"), fg=TEXT_COLOR).pack(pady=10)
-
         cart = self.data_manager.carts.get(self.data_manager.current_user, []) if self.data_manager.current_user else []
+        scroll_area = tk.Frame(cart_frame, bg=BG_COLOR)
+        scroll_area.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas = tk.Canvas(scroll_area, bg=BG_COLOR, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(scroll_area, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=BG_COLOR)
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self._cart_labels = []
+        self._cart_frames = []
+        def on_canvas_configure(event):
+            canvas_width = event.width
+            btn_width = 96
+            for label in self._cart_labels:
+                label.config(wraplength=canvas_width - btn_width - 12)
+        canvas.bind("<Configure>", on_canvas_configure)
         if not cart:
-            tk.Label(cart_frame, text="Giỏ hàng trống", bg=BG_COLOR, font=("Segoe UI", 14), fg=RED).pack(pady=20)
+            tk.Label(scrollable_frame, text="Giỏ hàng trống", bg=BG_COLOR, font=("Segoe UI", 14), fg=ERROR_COLOR).pack(pady=20)
         else:
             for i, item in enumerate(cart):
-                frame = tk.Frame(cart_frame, bg=CARD_COLOR)
-                frame.pack(fill=tk.X, padx=10, pady=5)
-
-                tk.Label(frame, text=f"{item['name']} - {item['price']} VNĐ (Gian hàng: {item['booth']})", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(side=tk.LEFT)
-
-                buy_btn = tk.Button(frame, text="Mua", command=lambda idx=i: self.buy_single_product(idx), bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=5, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR, cursor="hand2")
-                buy_btn.pack(side=tk.RIGHT, padx=5)
-
-                remove_btn = tk.Button(frame, text="Xóa", command=lambda idx=i: self.remove_from_cart(idx), bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=5, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR, cursor="hand2")
-                remove_btn.pack(side=tk.RIGHT, padx=5)
-
+                frame = tk.Frame(scrollable_frame, bg=CARD_COLOR)
+                frame.pack(fill=tk.X, padx=(10,0), pady=4, expand=True)
+                self._cart_frames.append(frame)
+                label = tk.Label(
+                    frame,
+                    text=f"{item['name']} - {item['price']} VNĐ (Gian hàng: {item['booth']})",
+                    bg=BG_COLOR,
+                    font=("Segoe UI", 12, "bold"),
+                    fg=TEXT_COLOR,
+                    anchor="w",
+                    justify="left"
+                )
+                label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                self._cart_labels.append(label)
+                buy_btn = tk.Button(frame, text="Mua", command=lambda idx=i: self.buy_single_product(idx), bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=5, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR, cursor="hand2", width=8)
+                buy_btn.pack(side=tk.RIGHT, fill=tk.Y, padx=0)
+                remove_btn = tk.Button(frame, text="Xóa", command=lambda idx=i: self.remove_from_cart(idx), bg=ERROR_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=5, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR, cursor="hand2", width=8)
+                remove_btn.pack(side=tk.RIGHT, fill=tk.Y, padx=0)
         buy_all_btn = tk.Button(cart_frame, text="Mua Tất Cả", command=self.buy_products, width=15, height=2, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=10, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR, cursor="hand2")
         buy_all_btn.pack(side='right', anchor='se', pady=10, padx=10)
 
@@ -228,7 +261,7 @@ class ECommerceGUI:
             self.show_cart()
 
         tk.Button(dialog, text="Xác Nhận", command=confirm_purchase, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=10)
-        tk.Button(dialog, text="Hủy", command=dialog.destroy, bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
+        tk.Button(dialog, text="Hủy", command=dialog.destroy, bg=ERROR_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
 
     def buy_products(self):
         if not self.data_manager.current_user:
@@ -242,7 +275,7 @@ class ECommerceGUI:
 
         dialog = tk.Toplevel(self.root)
         dialog.title="Xác Nhận Mua Tất Cả"
-        dialog.geometry("400x400")
+        dialog.geometry("700x600")  # Tăng kích thước popup
         dialog.configure(bg=BG_COLOR)
 
         tk.Label(dialog, text="Mua tất cả sản phẩm trong giỏ hàng", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(pady=10)
@@ -254,7 +287,7 @@ class ECommerceGUI:
         for item in cart:
             frame = tk.Frame(dialog, bg=BG_COLOR)
             frame.pack(fill=tk.X, padx=10, pady=5)
-            tk.Label(frame, text=f"{item['name']} - {item['price']} VNĐ (Gian hàng: {item['booth']})", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(side=tk.LEFT)
+            label = tk.Label(frame, text=f"{item['name']} - {item['price']} VNĐ (Gian hàng: {item['booth']})", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(side=tk.LEFT)
             quantity_entry = tk.Entry(frame, width=5, font=("Segoe UI", 13), bd=1, relief=tk.GROOVE)
             quantity_entry.pack(side=tk.LEFT, padx=5)
             quantity_entry.insert(0, "1")
@@ -305,7 +338,7 @@ class ECommerceGUI:
             self.show_cart()
 
         tk.Button(dialog, text="Xác Nhận", command=confirm_purchase, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=10)
-        tk.Button(dialog, text="Hủy", command=dialog.destroy, bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
+        tk.Button(dialog, text="Hủy", command=dialog.destroy, bg=ERROR_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
 
     def remove_from_cart(self, index):
         if not self.data_manager.current_user:
@@ -335,16 +368,67 @@ class ECommerceGUI:
 
         tk.Label(messages_frame, text="🔔 Thông báo", bg=PRIMARY_COLOR, font=("Segoe UI", 14, "bold"), fg=TEXT_COLOR).pack(pady=10)
 
+        # Vùng cuộn cho danh sách thông báo
+        scroll_area = tk.Frame(messages_frame, bg=BG_COLOR)
+        scroll_area.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        canvas = tk.Canvas(scroll_area, bg=BG_COLOR, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(scroll_area, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=BG_COLOR)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Tự động cập nhật wraplength khi canvas resize
+        self._message_labels = []
+        self._message_btns = []
+        self._message_frames = []
+        def on_canvas_configure(event):
+            canvas_width = event.width
+            frame_width = int(canvas_width * 0.7)
+            btn_width = 48
+            for frame in self._message_frames:
+                frame.config(width=frame_width)
+            for label in self._message_labels:
+                label.config(wraplength=frame_width - btn_width - 2)
+            for btn in self._message_btns:
+                btn.config(width=3)
+        canvas.bind("<Configure>", on_canvas_configure)
+
         messages = self.data_manager.messages.get(self.data_manager.current_user, []) if self.data_manager.current_user else []
         if not messages:
-            tk.Label(messages_frame, text="Chưa có thông báo nào!", bg=BG_COLOR, font=("Segoe UI", 14), fg=RED).pack(pady=20)
+            tk.Label(scrollable_frame, text="Chưa có thông báo nào!", bg=BG_COLOR, font=("Segoe UI", 14), fg=ERROR_COLOR).pack(pady=20)
         else:
             for i, msg in enumerate(messages):
-                frame = tk.Frame(messages_frame, bg=CARD_COLOR)
-                frame.pack(fill=tk.X, padx=10, pady=5)
-                tk.Label(frame, text=msg, bg=CARD_COLOR, font=("Segoe UI", 13), fg=TEXT_COLOR, wraplength=700, anchor="w").pack(side=tk.LEFT, fill=tk.X, expand=True)
-                btn = tk.Button(frame, text="✕", command=lambda idx=i: self.delete_single_message(idx), bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=8, pady=2, activebackground=RED, activeforeground=TEXT_COLOR, cursor="hand2")
-                btn.pack(side=tk.RIGHT, padx=4)
+                frame = tk.Frame(scrollable_frame, bg=CARD_COLOR)
+                frame.pack(fill=tk.X, padx=5, pady=4)
+                self._message_frames.append(frame)
+                label = tk.Label(
+                    frame,
+                    text=msg,
+                    bg=CARD_COLOR,
+                    font=("Segoe UI", 13),
+                    fg=TEXT_COLOR,
+                    anchor="w",
+                    justify="left"
+                )
+                label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(8,0), pady=6)
+                self._message_labels.append(label)
+                btn = tk.Button(
+                    frame, text="✕", command=lambda idx=i: self.delete_single_message(idx),
+                    bg=ERROR_COLOR, fg="white", font=("Segoe UI", 13, "bold"),
+                    bd=0, padx=12, pady=2, activebackground=ERROR_COLOR, activeforeground="white", cursor="hand2"
+                )
+                btn.pack(side=tk.RIGHT, padx=6, pady=4)
+                self._message_btns.append(btn)
 
     def delete_single_message(self, idx):
         if not self.data_manager.current_user or not self.data_manager.messages.get(self.data_manager.current_user):
@@ -371,7 +455,7 @@ class ECommerceGUI:
 
         orders = self.data_manager.orders.get(self.data_manager.current_user, [])
         if not orders:
-            tk.Label(reviews_frame, text="Chưa có sản phẩm nào để đánh giá!", bg=BG_COLOR, font=("Segoe UI", 14), fg=RED).pack(pady=20)
+            tk.Label(reviews_frame, text="Chưa có sản phẩm nào để đánh giá!", bg=BG_COLOR, font=("Segoe UI", 14), fg=ERROR_COLOR).pack(pady=20)
             return
 
         tk.Label(reviews_frame, text="Chọn sản phẩm:", bg=BG_COLOR, font=("Segoe UI", 16)).pack(pady=10)
@@ -380,8 +464,10 @@ class ECommerceGUI:
 
         # Tăng font-size cho Combobox
         style = ttk.Style()
-        style.configure("Custom.TCombobox", font=("Segoe UI", 15), padding=8)
+        style.configure("Custom.TCombobox", font=("Segoe UI", 18), padding=8)
         style.map("Custom.TCombobox", fieldbackground=[('readonly', 'white')])
+        # Tăng cỡ chữ cho list dropdown
+        style.configure("Custom.TComboboxPopdownList", font=("Segoe UI", 18))
 
         product_dropdown = ttk.Combobox(
             reviews_frame,
@@ -464,7 +550,7 @@ class ECommerceGUI:
         ), bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 14, "bold"), bd=0, padx=10, pady=8, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=10)
 
         tk.Label(settings_frame, text="Xóa Tài Khoản", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(pady=5)
-        tk.Button(settings_frame, text="Xóa Tài Khoản", command=self.delete_account, bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
+        tk.Button(settings_frame, text="Xóa Tài Khoản", command=self.delete_account, bg=ERROR_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
 
     def change_password(self, old_password, new_password, confirm_password):
         if new_password != confirm_password:
@@ -491,24 +577,18 @@ class ECommerceGUI:
             messagebox.showerror("Lỗi", "Vui lòng đăng nhập để bán hàng!")
             self.show_profile()
             return
-    
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-    
         selling_frame = tk.Frame(self.main_frame, bg=BG_COLOR)
         selling_frame.pack(fill=tk.BOTH, expand=True)
-    
-        tk.Label(selling_frame, text="Bán Hàng", bg=PRIMARY_COLOR, font=("Segoe UI", 18, "bold"), fg=TEXT_COLOR).pack(pady=10)
-    
+        tk.Label(selling_frame, text="Bán Hàng", bg=PRIMARY_COLOR, font=("Segoe UI", 18, "bold"), fg=TEXT_COLOR).pack(fill=tk.X, pady=10)
         tk.Label(selling_frame, text="Đăng Sản Phẩm Mới", bg=BG_COLOR, font=("Segoe UI", 14, "bold"), fg=TEXT_COLOR).pack(pady=5)
         tk.Label(selling_frame, text="Tên sản phẩm", bg=BG_COLOR).pack()
         name_entry = tk.Entry(selling_frame, font=("Segoe UI", 13), bd=1, relief=tk.GROOVE)
         name_entry.pack(pady=5)
-    
         tk.Label(selling_frame, text="Giá (VNĐ)", bg=BG_COLOR).pack()
         price_entry = tk.Entry(selling_frame, font=("Segoe UI", 13), bd=1, relief=tk.GROOVE)
         price_entry.pack(pady=5)
-    
         tk.Button(
             selling_frame,
             text="Đăng Sản Phẩm",
@@ -523,57 +603,73 @@ class ECommerceGUI:
             activeforeground=TEXT_COLOR,
             cursor="hand2"
         ).pack(pady=10)
-    
-        tk.Label(selling_frame, text="Thống Kê Doanh Thu", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(pady=5)
-    
+        # --- Scroll view cho cả thống kê và danh sách sản phẩm đã đăng ---
+        scroll_container = tk.Frame(selling_frame, bg=BG_COLOR)
+        scroll_container.pack(fill=tk.BOTH, expand=True)
+        canvas = tk.Canvas(scroll_container, bg=BG_COLOR, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(scroll_container, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=BG_COLOR)
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        # --- Thống kê doanh thu và danh sách sản phẩm đã đăng ra giữa ---
+        center_frame = tk.Frame(scrollable_frame, bg=BG_COLOR)
+        center_frame.pack(pady=10, anchor='center')
         user_prods = self.data_manager.user_products.get(self.data_manager.current_user, [])
         user_orders = self.data_manager.user_orders.get(self.data_manager.current_user, [])
         total_revenue = 0
-    
         for prod in user_prods:
             prod_orders = [o for o in user_orders if o['product_id'] == prod['id']]
             total_quantity = sum(o['quantity'] for o in prod_orders)
             total_price = sum(o['total_price'] for o in prod_orders)
             total_revenue += total_price
-    
             tk.Label(
-                selling_frame,
+                center_frame,
                 text=f"{prod['name']}: {total_quantity} sản phẩm, {total_price:,} VNĐ",
                 bg=BG_COLOR,
                 font=("Segoe UI", 12, "bold"),
                 fg=TEXT_COLOR,
                 anchor='w'
             ).pack(fill='x', padx=10)
-    
-        revenue_frame = tk.Frame(selling_frame, bg=BG_COLOR)
-        revenue_frame.pack(fill='x', padx=10, pady=5)
-    
         tk.Label(
-            revenue_frame,
+            center_frame,
             text=f"Tổng doanh thu: {total_revenue:,} VNĐ",
             bg=BG_COLOR,
             font=("Segoe UI", 12, "bold"),
             fg=TEXT_COLOR,
-            anchor='e'
-        ).pack(fill='x')
-    
-        tk.Label(selling_frame, text="Sản Phẩm Đã Đăng", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(pady=5)
-    
+            anchor='w'
+        ).pack(fill='x', padx=10, pady=(8,0))
+        tk.Label(center_frame, text="Sản Phẩm Đã Đăng", bg=BG_COLOR, font=("Segoe UI", 12, "bold"), fg=TEXT_COLOR).pack(pady=5)
+        self._selling_labels = []
+        self._selling_frames = []
+        def on_canvas_configure(event):
+            canvas_width = event.width
+            for label in self._selling_labels:
+                label.config(wraplength=canvas_width - 80)
+        canvas.bind("<Configure>", on_canvas_configure)
         if not user_prods:
-            tk.Label(selling_frame, text="Chưa có sản phẩm nào!", bg=BG_COLOR, font=("Segoe UI", 14), fg=RED).pack(pady=20)
+            tk.Label(center_frame, text="Chưa có sản phẩm nào!", bg=BG_COLOR, font=("Segoe UI", 14), fg=ERROR_COLOR).pack(pady=20)
         else:
             for i, prod in enumerate(user_prods):
-                frame = tk.Frame(selling_frame, bg=CARD_COLOR)
-                frame.pack(fill=tk.X, padx=10, pady=5)
-    
-                tk.Label(
+                frame = tk.Frame(center_frame, bg=CARD_COLOR)
+                frame.pack(fill=tk.X, padx=(10,0), pady=4)
+                self._selling_frames.append(frame)
+                label = tk.Label(
                     frame,
                     text=f"{prod['name']} - {prod['price']} VNĐ",
                     bg=BG_COLOR,
                     font=("Segoe UI", 12, "bold"),
-                    fg=TEXT_COLOR
-                ).pack(side=tk.LEFT)
-    
+                    fg=TEXT_COLOR,
+                    anchor="w",
+                    justify="left"
+                )
+                label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                self._selling_labels.append(label)
                 edit_btn = tk.Button(
                     frame,
                     text="Sửa",
@@ -589,12 +685,11 @@ class ECommerceGUI:
                     cursor="hand2"
                 )
                 edit_btn.pack(side=tk.RIGHT, padx=5)
-    
                 remove_btn = tk.Button(
                     frame,
                     text="Gỡ",
                     command=lambda idx=i: self.remove_user_product(idx),
-                    bg=RED,
+                    bg=ERROR_COLOR,
                     fg=TEXT_COLOR,
                     font=("Segoe UI", 11, "bold"),
                     bd=0,
@@ -664,7 +759,7 @@ class ECommerceGUI:
                 self.show_selling()
 
         tk.Button(dialog, text="Xác Nhận", command=confirm_edit, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=10)
-        tk.Button(dialog, text="Hủy", command=dialog.destroy, bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
+        tk.Button(dialog, text="Hủy", command=dialog.destroy, bg=ERROR_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
 
     def remove_user_product(self, index):
         if self.data_manager.remove_user_product(index):
@@ -682,7 +777,7 @@ class ECommerceGUI:
 
         if self.data_manager.current_user:
             tk.Label(profile_frame, text=f"Chào {self.data_manager.current_user}", bg=BG_COLOR, font=("Segoe UI", 14, "bold"), fg=TEXT_COLOR).pack(pady=10)
-            tk.Button(profile_frame, text="Đăng Xuất", command=self.logout, width=30, height=2, bg=RED, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
+            tk.Button(profile_frame, text="Đăng Xuất", command=self.logout, width=30, height=2, bg=ERROR_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
             tk.Button(profile_frame, text="Cài Đặt", command=self.show_settings, width=30, height=2, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
             tk.Button(profile_frame, text="Lịch Sử Mua Hàng", command=self.show_orders, width=30, height=2, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
             tk.Button(profile_frame, text="Đánh Giá Sản Phẩm", command=self.show_reviews, width=30, height=2, bg=PRIMARY_COLOR, fg=TEXT_COLOR, font=("Segoe UI", 11, "bold"), bd=0, padx=10, pady=4, activebackground=SECONDARY_COLOR, activeforeground=TEXT_COLOR).pack(pady=5)
@@ -763,15 +858,45 @@ class ECommerceGUI:
         self.update_nav_buttons()
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-
         orders_frame = tk.Frame(self.main_frame, bg="white")
         orders_frame.pack(fill=tk.BOTH, expand=True)
-
         tk.Label(orders_frame, text="Lịch Sử Mua Hàng", bg="white", font=("Segoe UI", 24, "bold")).pack(pady=20)
-
-        if not self.data_manager.current_user or self.data_manager.current_user not in self.data_manager.orders or not self.data_manager.orders[self.data_manager.current_user]:
-            tk.Label(orders_frame, text="Chưa có đơn hàng nào!", bg="white", font=("Segoe UI", 14)).pack(pady=20)
+        orders = self.data_manager.orders.get(self.data_manager.current_user, []) if self.data_manager.current_user else []
+        scroll_area = tk.Frame(orders_frame, bg="white")
+        scroll_area.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas = tk.Canvas(scroll_area, bg="white", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(scroll_area, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="white")
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self._order_labels = []
+        self._order_frames = []
+        def on_canvas_configure(event):
+            canvas_width = event.width
+            for label in self._order_labels:
+                label.config(wraplength=canvas_width - 80)
+        canvas.bind("<Configure>", on_canvas_configure)
+        if not orders:
+            tk.Label(scrollable_frame, text="Chưa có đơn hàng nào!", bg="white", font=("Segoe UI", 14), fg=ERROR_COLOR).pack(pady=20)
         else:
-            for i, order in enumerate(self.data_manager.orders[self.data_manager.current_user]):
+            for i, order in enumerate(orders):
                 item = order['product']
-                tk.Label(orders_frame, text=f"{item['name']} - {item['price']} VNĐ x {order['quantity']} (Gian hàng: {item['booth']}) - Địa chỉ: {order['address']}", bg="white", font=("Segoe UI", 16), pady=10).pack(pady=10) 
+                frame = tk.Frame(scrollable_frame, bg=CARD_COLOR)
+                frame.pack(fill=tk.X, padx=(10,0), pady=4, expand=True)
+                self._order_frames.append(frame)
+                label = tk.Label(
+                    frame,
+                    text=f"{item['name']} - {item['price']} VNĐ x {order['quantity']} (Gian hàng: {item['booth']}) - Địa chỉ: {order['address']}",
+                    bg="white",
+                    font=("Segoe UI", 16),
+                    anchor="w",
+                    justify="left"
+                )
+                label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                self._order_labels.append(label) 

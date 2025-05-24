@@ -1,14 +1,1 @@
-{
-    "tandoan": [
-        {
-            "product": {
-                "id": "5b7b1352-1d9b-4e23-9d31-80f11055e860",
-                "name": "đậu phụ",
-                "price": 10000,
-                "booth": "tandoan"
-            },
-            "quantity": 1,
-            "address": "148 nam ky khoi nghia"
-        }
-    ]
-}
+{}
